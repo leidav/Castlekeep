@@ -1,8 +1,12 @@
 #include "platform.h"
-namespace platform_abstraction
+
+namespace platform
 {
-Platform::Platform(memory::Allocator *allocator) : m_allocator(allocator) {}
+PlatformInterface::PlatformInterface(const memory::Arena &arena)
+    : m_allocator(arena)
+{
+}
 
-Platform::~Platform() {}
+PlatformInterface::~PlatformInterface() {}
 
-};  // namespace platform_abstraction
+};  // namespace platform

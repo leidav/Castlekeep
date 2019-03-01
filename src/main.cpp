@@ -13,12 +13,9 @@
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <time.h>
 #include "engine.h"
 
-#include <memory/allocator.h>
-#include <memory/freelist_allocator.h>
-#include <platform/sdl_platform.h>
+#include <time.h>
 
 int main()
 {

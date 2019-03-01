@@ -2,12 +2,12 @@
 #define ENGINE_H
 
 #include "memory/allocator.h"
-#include "memory/block_allocator.h"
 #include "memory/linear_allocator.h"
 
 #include "loaders/image_loader.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
+#include "tileset.h"
 
 namespace core
 {
@@ -20,11 +20,14 @@ public:
 	int shutdown();
 
 private:
-	platform_abstraction::Platform *m_platform;
-	loaders::ImageLoader *m_image_loader;
-	render::RenderSystem *m_render_interface;
+	memory::HeapRegion m_memory;
+	memory::LinearAllocator m_allocator;
 
-	memory::LinearAllocator m_systems_allocator;
+	platform::PlatformInterface *m_platform;
+	memory::UniquePtr<render::Renderer, memory::LinearAllocator>
+	    m_render_system;
+	TilesetManager m_tileset_system;
+	TilesetHandle m_tileset;
 };
 };  // namespace core
 #endif

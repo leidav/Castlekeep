@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.9)
 
 set (PROJECT_NAME castlekeep)
 project (${PROJECT_NAME})
@@ -11,13 +11,11 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
 	add_compile_options("-Wall")
 endif()
 
 find_package(SDL2 REQUIRED)
-
-find_package(RapidJSON REQUIRED)
 
 find_package(PNG REQUIRED)
 

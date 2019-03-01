@@ -4,16 +4,17 @@
 
 #include <SDL2/SDL_render.h>
 
-namespace platform_abstraction
+namespace platform
 {
-SDLPlatform::SDLPlatform(memory::Allocator *allocator)
-    : Platform(allocator), m_window(nullptr)
+SDLPlatform::SDLPlatform(const memory::Arena &arena)
+    : PlatformInterface(arena), m_window(nullptr)
 {
 }
 
 SDLPlatform::~SDLPlatform()
 {
 	SDL_DestroyWindow(m_window);
+	SDL_Quit();
 }
 
 int SDLPlatform::init()
@@ -26,7 +27,7 @@ int SDLPlatform::init()
 	return 0;
 }
 
-int SDLPlatform::initWindow(int width, int height, const char *name)
+int SDLPlatform::createWindow(int width, int height, const char *name)
 {
 	m_window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED,
 	                            SDL_WINDOWPOS_UNDEFINED, width, height, 0);
@@ -56,7 +57,8 @@ bool SDLPlatform::processEvents()
 	return is_running;
 }
 
-render::RenderSystem *SDLPlatform::createRenderSystem()
+memory::UniquePtr<render::Renderer, memory::LinearAllocator>
+SDLPlatform::createRenderSystem(const memory::Arena &arena, size_t max_textures)
 {
 	SDL_Renderer *renderer = SDL_CreateRenderer(
 	    m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -65,8 +67,10 @@ render::RenderSystem *SDLPlatform::createRenderSystem()
 		fprintf(stderr, "renderer creation failed!\n");
 		SDL_Quit();
 	}
-	return memory::allocateObject<render::SDLRenderSystem>((*m_allocator),
-	                                                       renderer);
+
+	render::Renderer *ptr = memory::createObject<render::SDLRenderSystem>(
+	    m_allocator, arena, renderer, max_textures);
+	return memory::makeUnique(ptr, &m_allocator);
 }
 
-};  // namespace platform_abstraction
+};  // namespace platform

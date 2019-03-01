@@ -2,28 +2,27 @@
 
 namespace memory
 {
-Allocator::~Allocator() {}
-LinearAllocatorWrapper::LinearAllocatorWrapper(
-    memory::LinearAllocator *allocator)
+AbstractAllocator::~AbstractAllocator() {}
+LinearAllocatorAdapter::LinearAllocatorAdapter(LinearAllocator &allocator)
     : m_allocator(allocator)
 {
 }
 
-LinearAllocatorWrapper::~LinearAllocatorWrapper() {}
+LinearAllocatorAdapter::~LinearAllocatorAdapter() {}
 
-void *LinearAllocatorWrapper::allocate(size_t size)
+void *LinearAllocatorAdapter::allocate(size_t size)
 {
-	return m_allocator->allocate(size);
+	return m_allocator.allocate(size);
 }
 
-void *LinearAllocatorWrapper::allocate_aligned(size_t size, size_t alignment)
+void *LinearAllocatorAdapter::allocate_aligned(size_t size, size_t alignment)
 {
-	return m_allocator->allocate_aligned(size, alignment);
+	return m_allocator.allocate_aligned(size, alignment);
 }
 
-void LinearAllocatorWrapper::deallocate(void *address)
+void LinearAllocatorAdapter::deallocate(void *address)
 {
-	return m_allocator->deallocate(address);
+	return m_allocator.deallocate(address);
 }
 
 };  // namespace memory

@@ -1,29 +1,29 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include <memory>
-
 #include "memory/allocator.h"
 #include "memory/polymorphic_allocator_wrappers.h"
 #include "renderer/renderer.h"
 
-namespace platform_abstraction
+namespace platform
 {
 enum class Platforms { LINUX_SDL };
 
-class Platform
+class PlatformInterface
 {
 public:
-	Platform(memory::Allocator *allocator);
-	virtual ~Platform() = 0;
+	PlatformInterface(const memory::Arena &arena);
+	virtual ~PlatformInterface() = 0;
 	virtual int init() = 0;
-	virtual int initWindow(int width, int height, const char *name) = 0;
+	virtual int createWindow(int width, int height, const char *name) = 0;
 	virtual bool processEvents() = 0;
-	virtual render::RenderSystem *createRenderSystem() = 0;
+
+	virtual memory::UniquePtr<render::Renderer, memory::LinearAllocator>
+	createRenderSystem(const memory::Arena &arena, size_t max_textures) = 0;
 
 protected:
-	memory::Allocator *m_allocator;
+	memory::LinearAllocator m_allocator;
 };
 
-};  // namespace platform_abstraction
+};  // namespace platform
 #endif

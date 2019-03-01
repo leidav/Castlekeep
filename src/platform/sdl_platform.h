@@ -1,26 +1,27 @@
 #ifndef SDL_PLATFORM_H
 #define SDL_PLATFORM_H
 
+#include "platform.h"
+
 #include <SDL2/SDL.h>
 
-#include "platform.h"
-#include "renderer/renderer.h"
-
-namespace platform_abstraction
+namespace platform
 {
-class SDLPlatform : public Platform
+class SDLPlatform : public PlatformInterface
 {
 public:
-	SDLPlatform(memory::Allocator *allocator);
+	SDLPlatform(const memory::Arena &arena);
 	~SDLPlatform() final;
 	int init() final;
-	int initWindow(int width, int height, const char *name) final;
+	int createWindow(int width, int height, const char *name) final;
 	bool processEvents() final;
-	render::RenderSystem *createRenderSystem() final;
+
+	memory::UniquePtr<render::Renderer, memory::LinearAllocator>
+	createRenderSystem(const memory::Arena &arena, size_t max_textures) final;
 
 private:
 	SDL_Window *m_window;
 };
 
-};  // namespace platform_abstraction
+};  // namespace platform
 #endif

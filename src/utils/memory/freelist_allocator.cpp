@@ -1,4 +1,5 @@
 #include "freelist_allocator.h"
+#include "debug.h"
 #include "utils.h"
 
 #include <algorithm>
@@ -15,7 +16,7 @@ FreeListAllocator::FreeListAllocator(void *memory, size_t size)
 	m_free_list->is_free = 1;
 }
 
-FreeListAllocator::FreeListAllocator(const MemoryArena &region)
+FreeListAllocator::FreeListAllocator(const Arena &region)
     : FreeListAllocator(region.memory, region.size)
 {
 }
@@ -80,6 +81,7 @@ void *FreeListAllocator::allocate_aligned(size_t size, size_t data_alignment)
 		prev = chunk;
 		chunk = chunk->next;
 	}
+	DEBUG_ASSERT(memory != nullptr, "Not enough memory!");
 
 	return memory;
 }
@@ -130,7 +132,7 @@ void FreeListAllocator::deallocate(void *address)
 		m_free_list = chunk_header;
 	}
 }
-
+/*
 void *FreeListAllocator::allocate_aligned_old(size_t size,
                                               size_t data_alignment)
 {
@@ -138,10 +140,8 @@ void *FreeListAllocator::allocate_aligned_old(size_t size,
 	ChunkHeader **prev_next = &m_free_list;
 	ChunkHeader *chunk = m_free_list;
 
-	// size_t header_alignment = std::alignment_of<ChunkHeader>();
 	size_t allocation_size = utils::roundUpToMultipleOfAlignment(
-	    size + sizeof(ChunkHeader) + data_alignment,
-	    /*header_alignment*/ allocation_size_alignment);
+		size + sizeof(ChunkHeader) + data_alignment, allocation_size_alignment);
 
 	while (chunk != nullptr) {
 		if (allocation_size <= chunk->size) {
@@ -152,11 +152,11 @@ void *FreeListAllocator::allocate_aligned_old(size_t size,
 
 			ChunkHeader *next = nullptr;
 			if (chunk->size - allocation_size >=
-			    sizeof(ChunkHeader) + minimal_split_size) {
+				sizeof(ChunkHeader) + minimal_split_size) {
 				next = reinterpret_cast<ChunkHeader *>(
-				    reinterpret_cast<std::byte *>(chunk) + allocation_size);
+					reinterpret_cast<std::byte *>(chunk) + allocation_size);
 				next->size =
-				    chunk->size - static_cast<uint32_t>(allocation_size);
+					chunk->size - static_cast<uint32_t>(allocation_size);
 				next->next = chunk->next;
 				chunk->size = static_cast<uint32_t>(allocation_size);
 			} else {
@@ -170,15 +170,15 @@ void *FreeListAllocator::allocate_aligned_old(size_t size,
 	}
 
 	return memory;
-}
-
+}*/
+/*
 void FreeListAllocator::deallocate_old(void *address)
 {
 	if (address != nullptr) {
 		std::byte *addr = reinterpret_cast<std::byte *>(address);
 		size_t offset = static_cast<size_t>(*(addr - 1));
 		ChunkHeader *header = reinterpret_cast<ChunkHeader *>(
-		    addr - offset - sizeof(ChunkHeader));
+			addr - offset - sizeof(ChunkHeader));
 
 		ChunkHeader *chunk = m_free_list;
 		ChunkHeader *prev = nullptr;
@@ -213,6 +213,6 @@ void FreeListAllocator::deallocate_old(void *address)
 			}
 		}
 	}
-}
+}*/
 
 }  // namespace memory

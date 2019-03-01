@@ -1,11 +1,12 @@
 #ifndef BLOCK_ALLOCATOR
 #define BLOCK_ALLOCATOR
 
+#include "allocator.h"
+#include "debug.h"
+#include "utils.h"
+
 #include <cstddef>
 #include <cstdint>
-
-#include "allocator.h"
-#include "utils.h"
 
 namespace memory
 {
@@ -26,7 +27,7 @@ public:
 		m_free = reinterpret_cast<BlockHeader *>(memory);
 		m_free->next = nullptr;
 	}
-	BlockAllocator(const MemoryArena &region, size_t alignment = 16)
+	BlockAllocator(const Arena &region, size_t alignment = 16)
 	    : BlockAllocator(region.memory, region.size, alignment)
 	{
 	}
@@ -46,6 +47,7 @@ public:
 			}
 			m_allocated++;
 		}
+		DEBUG_ASSERT(block != nullptr, "Not enough memory");
 		return block;
 	}
 	void *allocate(size_t size) { return allocate(); }

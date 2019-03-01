@@ -6,6 +6,8 @@
 #include <iterator>
 #include <memory>
 
+namespace container
+{
 template <typename T, typename Allocator = std::allocator<T>>
 class Array
 {
@@ -209,4 +211,5 @@ private:
 	T* m_data;
 	allocator_type m_allocator;
 };
+};  // namespace container
 #endif

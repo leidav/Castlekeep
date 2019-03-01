@@ -1,29 +1,55 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include <memory>
-#include <vector>
+#include "container/array.h"
+#include "memory/linear_allocator.h"
 
 #include "renderer/renderer.h"
+#include "texture_atlas.h"
 
-struct Rect {
-	uint16_t x;
-	uint16_t y;
-	uint16_t width;
-	uint16_t height;
-};
-
+namespace core
+{
 struct TileObjectPart {
 	uint8_t x;
 	uint8_t y;
-	uint16_t object_id;
-	// uint16_t tile;
+};
+
+struct TileObject {
+	uint16_t id;
+	uint16_t num_parts;
+	uint16_t start_index;
 };
 
 struct Tileset {
-	std::vector<Rect> rects;
-	std::vector<render::TextureID> texture_handles;
-	// std::vector<TileObjectPart> m_tile_object_parts;
+	int num_objects;
+	int num_tiles;
+	TileObject *objects;
+	TileObjectPart *parts;
+	TextureAtlas atlas;
 };
+
+typedef uint16_t TilesetHandle;
+enum : TilesetHandle { TILESET_INVALID };
+
+class TilesetManager
+{
+	using Allocator =
+	    memory::ContainerAllocatorAdapter<Tileset, memory::LinearAllocator>;
+
+public:
+	TilesetManager(const memory::Arena &arena, size_t max_tilesets);
+	~TilesetManager();
+	TilesetHandle createTileset(const char *data_file,
+	                            render::TextureHandle texture);
+	Tileset *tileset(TilesetHandle handle);
+
+private:
+	memory::LinearAllocator m_allocator;
+	memory::Arena m_loader_arena;
+	size_t m_num_tilesets;
+	container::Array<Tileset, Allocator> m_tilesets;
+};
+
+}  // namespace core
 
 #endif

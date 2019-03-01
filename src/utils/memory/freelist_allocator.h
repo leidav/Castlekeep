@@ -1,11 +1,10 @@
 #ifndef FREELIST_ALLOCATOR
 #define FREELIST_ALLOCATOR
 
+#include "allocator.h"
+
 #include <cstddef>
 #include <cstdint>
-
-#include <algorithm>
-#include "allocator.h"
 
 namespace memory
 {
@@ -13,7 +12,7 @@ class FreeListAllocator
 {
 public:
 	FreeListAllocator(void *memory, size_t size);
-	FreeListAllocator(const MemoryArena &region);
+	FreeListAllocator(const Arena &region);
 	~FreeListAllocator();
 
 	void *allocate(size_t size);
@@ -21,8 +20,8 @@ public:
 
 	void deallocate(void *address);
 
-	void *allocate_aligned_old(size_t size, size_t alignment);
-	void deallocate_old(void *address);
+	// void *allocate_aligned_old(size_t size, size_t alignment);
+	// void deallocate_old(void *address);
 
 private:
 	struct ChunkHeader {

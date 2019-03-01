@@ -1,6 +1,7 @@
 #include "renderer.h"
+
 namespace render
 {
-RenderSystem::~RenderSystem() {}
+Renderer::~Renderer() {}
 
 };  // namespace render

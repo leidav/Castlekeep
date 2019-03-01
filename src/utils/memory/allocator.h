@@ -24,8 +24,14 @@ constexpr size_t operator"" _gib(unsigned long long int size)
 	return static_cast<size_t>(size) * 1024 * 1024 * 1024;
 }
 }  // namespace literals
-struct MemoryArena {
-	MemoryArena(size_t s, void *mem) : size(s), memory(mem) {}
+
+struct Arena {
+	template <typename Allocator>
+	Arena(Allocator &allocator, size_t size)
+	    : size(size), memory(allocator.allocate(size))
+	{
+	}
+	Arena(size_t s, void *mem) : size(s), memory(mem) {}
 	size_t size;
 	void *memory;
 };
@@ -46,7 +52,7 @@ public:
 	void *start() { return m_memory; }
 	void *end() { return m_memory + m_size; }
 
-	MemoryArena memory() { return {m_size, m_memory}; }
+	Arena memory() { return Arena{m_size, m_memory}; }
 
 private:
 	size_t m_size;
@@ -54,7 +60,7 @@ private:
 };
 
 template <typename T, typename Allocator, typename... Args>
-T *allocateObject(Allocator &allocator, Args &&... args)
+T *createObject(Allocator &allocator, Args &&... args)
 {
 	return new (allocator.allocate_aligned(sizeof(T), alignof(T)))
 	    T(std::forward<Args>(args)...);
@@ -71,26 +77,49 @@ template <typename T, typename Allocator>
 class Deleter
 {
 public:
-	Deleter(Allocator &allocator) : m_allocator(allocator) {}
+	Deleter(Allocator *allocator) : m_allocator(allocator) {}
 	void operator()(T *object)
 	{
 		object->~T();
-		m_allocator.deallocate(object);
+		m_allocator->deallocate(object);
 	}
+
+private:
+	Allocator *m_allocator;
+};
+
+template <typename T, typename Allocator>
+using UniquePtr = std::unique_ptr<T, Deleter<T, Allocator>>;
+
+template <typename T, typename Allocator>
+UniquePtr<T, Allocator> makeUnique(T *ptr, Allocator *allocator)
+{
+	return UniquePtr<T, Allocator>(ptr, Deleter<T, Allocator>(allocator));
+}
+
+template <typename T, typename Allocator, typename... Args>
+auto createUniquePtrObject(Allocator *allocator, Args &&... args)
+{
+	T *ptr = createObject<T, Allocator>(allocator, std::forward<Args>(args)...);
+
+	return UniquePtr<T, Allocator>(ptr, Deleter<T, Allocator>(allocator));
+}
+
+template <typename T, typename Allocator>
+class ContainerAllocatorAdapter
+{
+public:
+	using value_type = T;
+	ContainerAllocatorAdapter(Allocator &a) : m_allocator(a) {}
+	T *allocate(size_t size)
+	{
+		return reinterpret_cast<T *>(m_allocator.allocate(size));
+	}
+	void deallocate(T *p, std::size_t) { return m_allocator.deallocate(p); }
 
 private:
 	Allocator &m_allocator;
 };
-
-template <typename T, typename Allocator, typename... Args>
-auto allocateUniquePtrObject(Allocator &allocator, Args &&... args)
-{
-	T *ptr =
-	    allocateObject<T, Allocator>(allocator, std::forward<Args>(args)...);
-
-	return std::unique_ptr<T, Deleter<T, Allocator>>(
-	    ptr, Deleter<T, Allocator>(allocator));
-}
 
 }  // namespace memory
 #endif

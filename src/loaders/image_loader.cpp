@@ -1,6 +1,6 @@
 #include "image_loader.h"
 
-#include <memory/linear_allocator.h>
+#include "memory/linear_allocator.h"
 
 #include <png.h>
 #include <cstdio>
@@ -20,30 +20,26 @@ static void deallocate(png_structp png_ptr, png_voidp ptr)
 	return;
 }
 
-namespace loaders
+namespace loader
 {
-ImageLoader::ImageLoader(const memory::MemoryArena &memory, int max_width,
-                         int max_height)
-    : m_allocator(memory), m_max_width(max_width), m_max_height(max_height)
+int loadImage(std::byte image[], size_t buffer_size, int &width, int &height,
+              int &channels, const char *file, const memory::Arena &arena,
+              int max_width, int max_height)
 {
-}
-
-int ImageLoader::load(std::byte image[], std::size_t buffer_size, int &width,
-                      int &height, int &channels, const char *file)
-{
-	auto marker_guard = m_allocator.markGuarded();
+	memory::LinearAllocator allocator(arena);
+	auto marker_guard = allocator.markGuarded();
 	png_byte buffer[10];
 	std::FILE *fp = fopen(file, "rb");
 	if (fp == nullptr) {
 		return -1;
 	}
-	size_t offset = std::fread(buffer, 1, 10, fp);
-	if (!png_sig_cmp(buffer, 0, 10)) {
+	size_t offset = std::fread(buffer, 1, 8, fp);
+	if (png_sig_cmp(buffer, 0, 8) != 0) {
 		return -1;
 	}
 	png_structp png_ptr =
 	    png_create_read_struct_2(PNG_LIBPNG_VER_STRING, nullptr, nullptr,
-	                             nullptr, &m_allocator, allocate, deallocate);
+	                             nullptr, &allocator, allocate, deallocate);
 	if (!png_ptr) {
 		return -1;
 	}
@@ -80,24 +76,18 @@ int ImageLoader::load(std::byte image[], std::size_t buffer_size, int &width,
 	int pitch = width * channels;
 	size_t size = static_cast<size_t>(pitch * height);
 
-	if (width > m_max_width || height > m_max_height || size > buffer_size ||
+	if (width > max_width || height > max_height || size > buffer_size ||
 	    interlace_type != PNG_INTERLACE_NONE) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 		fclose(fp);
 		return -1;
 	}
 
-	// static png_byte *row_pointers[MAX_HEIGHT];
-
 	png_byte *row_pointer = reinterpret_cast<png_byte *>(image);
 	for (int i = 0; i < height; i++) {
 		png_read_row(png_ptr, row_pointer, nullptr);
 		row_pointer += pitch;
-		// row_pointers[i] = reinterpret_cast<png_byte *>(output) + (pitch * i);
 	}
-	// png_set_rows(png_ptr, info_ptr, row_pointers);
-
-	// png_read_image(png_ptr, row_pointers);
 
 	png_read_end(png_ptr, info_ptr);
 
@@ -107,4 +97,4 @@ int ImageLoader::load(std::byte image[], std::size_t buffer_size, int &width,
 
 	return 0;
 }
-}  // namespace loaders
+}  // namespace loader

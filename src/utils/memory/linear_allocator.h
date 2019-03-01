@@ -1,11 +1,12 @@
 #ifndef LINEAR_ALLOCATOR
 #define LINEAR_ALLOCATOR
 
+#include "allocator.h"
+#include "debug.h"
+#include "utils.h"
+
 #include <cstddef>
 #include <cstdint>
-
-#include "allocator.h"
-#include "utils.h"
 
 namespace memory
 {
@@ -38,8 +39,8 @@ public:
 	      m_end(m_memory + size)
 	{
 	}
-	LinearAllocator(const MemoryArena &region)
-	    : LinearAllocator(region.memory, region.size)
+	LinearAllocator(const Arena &arena)
+	    : LinearAllocator(arena.memory, arena.size)
 	{
 	}
 
@@ -52,10 +53,11 @@ public:
 		size_t offset = utils::alignmentOffset(m_free, alignment);
 
 		auto next_free = m_free + size + offset;
-		if (next_free < m_end) {
-			address = m_free + offset;
-			m_free = next_free;
-		}
+		DEBUG_ASSERT(next_free < m_end, "Not enough memory!");
+		// if (next_free < m_end) {
+		address = m_free + offset;
+		m_free = next_free;
+		//}
 		return address;
 	}
 
