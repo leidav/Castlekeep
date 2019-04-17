@@ -20,6 +20,8 @@ static void deallocate(png_structp png_ptr, png_voidp ptr)
 	return;
 }
 
+namespace castlekeep
+{
 namespace loader
 {
 int loadImage(std::byte image[], size_t buffer_size, int &width, int &height,
@@ -98,3 +100,4 @@ int loadImage(std::byte image[], size_t buffer_size, int &width, int &height,
 	return 0;
 }
 }  // namespace loader
+}  // namespace castlekeep

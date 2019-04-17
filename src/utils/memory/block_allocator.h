@@ -47,7 +47,7 @@ public:
 			}
 			m_allocated++;
 		}
-		DEBUG_ASSERT(block != nullptr, "Not enough memory");
+		DEBUG_ASSERT(block != nullptr, "Not enough memory!");
 		return block;
 	}
 	void *allocate(size_t size) { return allocate(); }

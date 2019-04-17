@@ -4,30 +4,59 @@
 #include "memory/allocator.h"
 #include "memory/linear_allocator.h"
 
+#include "graphics_manager.h"
 #include "loaders/image_loader.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
-#include "tileset.h"
+#include "world.h"
+#include "world_renderer.h"
 
+namespace castlekeep
+{
 namespace core
 {
+inline Engine *g_engine;
+
 class Engine
 {
 public:
-	Engine();
-	int start();
+	static std::unique_ptr<Engine> create(size_t memory_size)
+	{
+		if (instanciated == true) {
+			return nullptr;
+		}
+		g_engine = new Engine(memory_size);
+		return std::unique_ptr<Engine>(g_engine);
+	}
+
+	int startUp();
 	int loop();
-	int shutdown();
+	int shutDown();
+
+	platform::PlatformInterface *platform() { return m_platform.get(); }
+	render::RenderInterface *renderer() { return m_renderer.get(); }
+	graphics::GraphicsManager *graphicsManager()
+	{
+		return m_graphics_manager.get();
+	}
 
 private:
+	Engine(size_t memory_size);
 	memory::HeapRegion m_memory;
-	memory::LinearAllocator m_allocator;
+	memory::LinearAllocator m_global_allocator;
+	memory::LinearAllocator m_systems_allocator;
 
-	platform::PlatformInterface *m_platform;
-	memory::UniquePtr<render::Renderer, memory::LinearAllocator>
-	    m_render_system;
-	TilesetManager m_tileset_system;
-	TilesetHandle m_tileset;
+	memory::UniquePtr<platform::PlatformInterface, memory::LinearAllocator>
+	    m_platform;
+	memory::UniquePtr<render::RenderInterface, memory::LinearAllocator>
+	    m_renderer;
+	memory::UniquePtr<graphics::GraphicsManager, memory::LinearAllocator>
+	    m_graphics_manager;
+	memory::UniquePtr<World, memory::LinearAllocator> m_world;
+	memory::UniquePtr<WorldRenderer, memory::LinearAllocator> m_world_renderer;
+
+	static inline bool instanciated = false;
 };
-};  // namespace core
+}  // namespace core
+}  // namespace castlekeep
 #endif

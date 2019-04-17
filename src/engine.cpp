@@ -1,87 +1,90 @@
 #include "engine.h"
 
+#include "assets.h"
 #include "loaders/data_loader.h"
 #include "platform/sdl_platform.h"
+#include "renderer/sdl_renderer.h"
 #include "utils/memory/allocator.h"
 
+#include <unistd.h>
+
+namespace castlekeep
+{
 namespace core
 {
 using namespace memory::literals;
-Engine::Engine()
-    : m_memory(1024_mib),
-      m_allocator(m_memory.memory()),
-      m_platform(nullptr),
-      m_render_system(
-          memory::makeUnique<render::Renderer, memory::LinearAllocator>(
-              nullptr, &m_allocator)),
-      m_tileset_system(memory::Arena(m_allocator, 100_mib), 100)
+Engine::Engine(size_t mem_size)
+    : m_memory(mem_size),
+      m_global_allocator(m_memory.memory()),
+      m_systems_allocator(memory::Arena(m_global_allocator, 10_kib)),
+      m_platform(nullptr, m_systems_allocator),
+      m_renderer(nullptr, m_systems_allocator),
+      m_graphics_manager(nullptr, m_systems_allocator),
+      m_world(nullptr, m_systems_allocator),
+      m_world_renderer(nullptr, m_systems_allocator)
 {
 }
 
-int Engine::start()
+int Engine::startUp()
 {
-	m_platform = memory::createObject<platform::SDLPlatform>(
-	    m_allocator, memory::Arena(m_allocator, 1_mib));
-	m_platform->init();
-	m_platform->createWindow(1024, 768, "Castlekeep");
-	m_render_system = m_platform->createRenderSystem(
-	    memory::Arena(m_allocator, 100_mib), 100);
-	auto marker = m_allocator.markGuarded();
-	size_t buffer_size =
-	    loader::IMAGE_DEFAULT_MAX_WIDTH * loader::IMAGE_DEFAULT_MAX_HEIGHT * 4;
-	std::byte* image_buffer =
-	    reinterpret_cast<std::byte*>(m_allocator.allocate(buffer_size));
+	auto platform = memory::createObject<platform::SDLPlatform>(
+	    m_systems_allocator,
+	    memory::Arena(m_global_allocator,
+	                  platform::SDLPlatform::minimalArenaSize()));
+	platform->startUp();
+	m_platform = memory::makeUnique<platform::PlatformInterface>(
+	    platform, m_systems_allocator);
+	m_platform->createWindow(1920, 1080, "Castlekeep");
+	auto renderer = memory::createObject<render::SDLRenderSystem>(
+	    m_systems_allocator,
+	    memory::Arena(m_global_allocator,
+	                  render::SDLRenderSystem::minimalArenaSize()),
+	    reinterpret_cast<SDL_Window*>(m_platform->window().window),
+	    assets::k_num_graphics_assets);
+	if (renderer->startUp() != 0) {
+		fprintf(stderr, "renderer initialization failed!\n");
+		exit(1);
+	}
+	m_renderer = memory::makeUnique<render::RenderInterface>(
+	    renderer, m_systems_allocator);
 
-	int width = 0;
-	int height = 0;
-	int channels = 0;
-	if (loader::loadImage(image_buffer, buffer_size, width, height, channels,
-	                      "data/terrain/tile_land8.png",
-	                      memory::Arena(m_allocator, 1_mib)) != 0) {
-		fprintf(stderr, "image loading failed\n");
-		std::exit(1);
-	}
-	render::TextureHandle texture = m_render_system->createTexture(
-	    width, height, render::PixelFormat::ARGB8888, image_buffer);
-	if (texture == render::TEXTURE_INVALID) {
-		fprintf(stderr, "texture creation failed\n");
-		std::exit(1);
-	}
-	m_tileset =
-	    m_tileset_system.createTileset("data/terrain/tile_land8.data", texture);
-	if (m_tileset == TILESET_INVALID) {
-		fprintf(stderr, "tileset creation failed\n");
-		std::exit(1);
-	}
+	m_graphics_manager =
+	    memory::createUniquePtrObject<graphics::GraphicsManager>(
+	        m_systems_allocator,
+	        memory::Arena(m_global_allocator,
+	                      graphics::GraphicsManager::minimalArenaSize()),
+	        assets::k_num_tile_assets, assets::k_num_animation_assets,
+	        assets::k_num_generic_image_assets);
+
+	m_graphics_manager->startUp();
+	m_world = memory::createUniquePtrObject<World>(
+	    m_systems_allocator,
+	    memory::Arena(m_global_allocator, World::k_minimal_arena_size), 400);
+	m_world_renderer = memory::createUniquePtrObject<WorldRenderer>(
+	    m_systems_allocator,
+	    memory::Arena(m_global_allocator, WorldRenderer::minimalArenaSize()),
+	    m_world.get());
+
+	m_world->loadAssets();
+	m_world->generateTerrain();
+
 	return 0;
 }
 
 int Engine::loop()
 {
-	Tileset* tileset = m_tileset_system.tileset(m_tileset);
 	while (m_platform->processEvents()) {
-		auto marker = m_allocator.mark();
-		render::DrawCommandBuffer commands;
-		commands.commands =
-		    memory::createObject<render::DrawCommand>(m_allocator);
-		commands.length = 1;
-		commands.commands[0].src_x = tileset->atlas.rects[0].x;
-		commands.commands[0].src_y = tileset->atlas.rects[0].y;
-		commands.commands[0].dst_x = 0;
-		commands.commands[0].dst_y = 0;
-		commands.commands[0].width = tileset->atlas.rects[0].width;
-		commands.commands[0].height = tileset->atlas.rects[1].height;
-		commands.texture_id = tileset->atlas.texture;
-		m_render_system->startFrame();
-		m_render_system->draw(commands);
-		m_render_system->endFrame();
-		m_allocator.reset(marker);
+		m_renderer->startFrame();
+		m_world_renderer->renderWorld();
+		m_renderer->endFrame();
 	}
 	return 0;
 }
 
-int Engine::shutdown()
+int Engine::shutDown()
 {
 	return 0;
 }
-};  // namespace core
+}  // namespace core
+
+}  // namespace castlekeep

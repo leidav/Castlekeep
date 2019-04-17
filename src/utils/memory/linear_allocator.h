@@ -53,11 +53,11 @@ public:
 		size_t offset = utils::alignmentOffset(m_free, alignment);
 
 		auto next_free = m_free + size + offset;
-		DEBUG_ASSERT(next_free < m_end, "Not enough memory!");
-		// if (next_free < m_end) {
-		address = m_free + offset;
-		m_free = next_free;
-		//}
+		if (next_free < m_end) {
+			address = m_free + offset;
+			m_free = next_free;
+		}
+		DEBUG_ASSERT(address != nullptr, "Not enough memory!");
 		return address;
 	}
 

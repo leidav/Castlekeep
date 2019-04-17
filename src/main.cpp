@@ -15,14 +15,13 @@
 
 #include "engine.h"
 
-#include <time.h>
-
+#include <memory/allocator.h>
+using namespace memory::literals;
 int main()
 {
-	srand(time(NULL));
-	core::Engine engine;
-	engine.start();
-	engine.loop();
-	engine.shutdown();
+	auto engine = castlekeep::core::Engine::create(256_mib);
+	engine->startUp();
+	engine->loop();
+	engine->shutDown();
 	return 0;
 }

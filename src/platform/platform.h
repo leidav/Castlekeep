@@ -5,25 +5,25 @@
 #include "memory/polymorphic_allocator_wrappers.h"
 #include "renderer/renderer.h"
 
+namespace castlekeep
+{
 namespace platform
 {
-enum class Platforms { LINUX_SDL };
+enum class Platforms { linux_sdl };
+
+struct WindowHandle {
+	void *window;
+};
 
 class PlatformInterface
 {
 public:
-	PlatformInterface(const memory::Arena &arena);
 	virtual ~PlatformInterface() = 0;
-	virtual int init() = 0;
 	virtual int createWindow(int width, int height, const char *name) = 0;
 	virtual bool processEvents() = 0;
-
-	virtual memory::UniquePtr<render::Renderer, memory::LinearAllocator>
-	createRenderSystem(const memory::Arena &arena, size_t max_textures) = 0;
-
-protected:
-	memory::LinearAllocator m_allocator;
+	virtual WindowHandle window() = 0;
 };
 
 };  // namespace platform
+}  // namespace castlekeep
 #endif

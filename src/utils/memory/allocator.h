@@ -77,11 +77,14 @@ template <typename T, typename Allocator>
 class Deleter
 {
 public:
-	Deleter(Allocator *allocator) : m_allocator(allocator) {}
+	Deleter(Allocator &allocator) : m_allocator(&allocator) {}
+	Deleter(const Deleter &deleter) : m_allocator(deleter.m_allocator) {}
 	void operator()(T *object)
 	{
-		object->~T();
-		m_allocator->deallocate(object);
+		if (object != nullptr) {
+			object->~T();
+			m_allocator->deallocate(object);
+		}
 	}
 
 private:
@@ -92,13 +95,13 @@ template <typename T, typename Allocator>
 using UniquePtr = std::unique_ptr<T, Deleter<T, Allocator>>;
 
 template <typename T, typename Allocator>
-UniquePtr<T, Allocator> makeUnique(T *ptr, Allocator *allocator)
+auto makeUnique(T *ptr, Allocator &allocator)
 {
 	return UniquePtr<T, Allocator>(ptr, Deleter<T, Allocator>(allocator));
 }
 
 template <typename T, typename Allocator, typename... Args>
-auto createUniquePtrObject(Allocator *allocator, Args &&... args)
+auto createUniquePtrObject(Allocator &allocator, Args &&... args)
 {
 	T *ptr = createObject<T, Allocator>(allocator, std::forward<Args>(args)...);
 
@@ -113,7 +116,8 @@ public:
 	ContainerAllocatorAdapter(Allocator &a) : m_allocator(a) {}
 	T *allocate(size_t size)
 	{
-		return reinterpret_cast<T *>(m_allocator.allocate(size));
+		return reinterpret_cast<T *>(
+		    m_allocator.allocate_aligned(sizeof(T) * size, alignof(T)));
 	}
 	void deallocate(T *p, std::size_t) { return m_allocator.deallocate(p); }
 

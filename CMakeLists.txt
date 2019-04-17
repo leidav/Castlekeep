@@ -15,7 +15,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
 	add_compile_options("-Wall")
 endif()
 
+
 find_package(SDL2 REQUIRED)
+
+set(OpenGL_GL_PREFERENCE "GLVND")
+find_package(OpenGL REQUIRED)
+
+find_package(LibEpoxy REQUIRED)
 
 find_package(PNG REQUIRED)
 

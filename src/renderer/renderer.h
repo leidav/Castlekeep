@@ -4,17 +4,19 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace castlekeep
+{
 namespace render
 {
 typedef uint16_t TextureHandle;
 
-enum : TextureHandle { TEXTURE_INVALID = 0 };
+constexpr TextureHandle k_texture_invalid = 0;
 
 struct DrawCommand {
-	uint16_t dst_x;
-	uint16_t dst_y;
-	uint16_t src_x;
-	uint16_t src_y;
+	int16_t dst_x;
+	int16_t dst_y;
+	int16_t src_x;
+	int16_t src_y;
 	uint16_t width;
 	uint16_t height;
 	uint16_t depth;
@@ -26,20 +28,22 @@ struct DrawCommandBuffer {
 	TextureHandle texture_id;
 };
 
-enum class PixelFormat { ARGB8888, PALLETIZED };
+enum class PixelFormat { argb8888, palettized };
 
-class Renderer
+class RenderInterface
 {
 public:
-	virtual ~Renderer() = 0;
+	virtual ~RenderInterface() = 0;
 
 	virtual TextureHandle createTexture(int width, int height,
 	                                    PixelFormat format,
 	                                    const std::byte *data) = 0;
+	virtual int startUp() = 0;
 	virtual void startFrame() = 0;
 	virtual void draw(const DrawCommandBuffer &buffer) = 0;
 	virtual void endFrame() = 0;
 };
 
 }  // namespace render
+}  // namespace castlekeep
 #endif

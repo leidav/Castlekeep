@@ -1,7 +1,10 @@
 #include "renderer.h"
 
+namespace castlekeep
+{
 namespace render
 {
-Renderer::~Renderer() {}
+RenderInterface::~RenderInterface() {}
 
 };  // namespace render
+}  // namespace castlekeep
