@@ -34,15 +34,13 @@ int SDLPlatform::createWindow(int width, int height, const char *name)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
 	                    SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	m_window =
-	    SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-	                     width, height, SDL_WINDOW_OPENGL);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	m_window = SDL_CreateWindow(
+	    name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
+	    SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
 
-	/*m_window =
-	    SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-						 width, height, SDL_WINDOW_FULLSCREEN_DESKTOP);*/
 	if (m_window == nullptr) {
 		fprintf(stderr, "window creation failed!\n");
 		SDL_Quit();

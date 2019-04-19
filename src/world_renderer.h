@@ -24,7 +24,7 @@ public:
 private:
 	int renderTerrain();
 	void renderTile(render::DrawCommandBuffer &draw_commads, MapCoord pos,
-	                const graphics::Rect &rect);
+	                int layer, const graphics::Rect &rect);
 	memory::LinearAllocator m_allocator;
 	World *m_world;
 };

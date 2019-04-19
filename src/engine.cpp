@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "loaders/data_loader.h"
 #include "platform/sdl_platform.h"
+#include "renderer/gl_renderer.h"
 #include "renderer/sdl_renderer.h"
 #include "utils/memory/allocator.h"
 
@@ -35,10 +36,10 @@ int Engine::startUp()
 	m_platform = memory::makeUnique<platform::PlatformInterface>(
 	    platform, m_systems_allocator);
 	m_platform->createWindow(1920, 1080, "Castlekeep");
-	auto renderer = memory::createObject<render::SDLRenderSystem>(
+	auto renderer = memory::createObject<render::GLRenderSystem>(
 	    m_systems_allocator,
 	    memory::Arena(m_global_allocator,
-	                  render::SDLRenderSystem::minimalArenaSize()),
+	                  render::GLRenderSystem::minimalArenaSize()),
 	    reinterpret_cast<SDL_Window*>(m_platform->window().window),
 	    assets::k_num_graphics_assets);
 	if (renderer->startUp() != 0) {

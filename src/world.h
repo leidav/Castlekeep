@@ -42,6 +42,12 @@ struct MapCoord {
 	int16_t y;
 };
 
+struct Camera {
+	Camera() : x(0), y(0) {}
+	int x;
+	int y;
+};
+
 constexpr MapCoord north(MapCoord pos)
 {
 	pos.y -= 2;
@@ -144,6 +150,7 @@ private:
 	container::Array<graphics::AnimationHandle,
 	                 Allocator<graphics::AnimationHandle>>
 	    m_animations;
+	Camera m_camera;
 };
 }  // namespace core
 }  // namespace castlekeep

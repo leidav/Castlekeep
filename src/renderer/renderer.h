@@ -19,7 +19,7 @@ struct DrawCommand {
 	int16_t src_y;
 	uint16_t width;
 	uint16_t height;
-	uint16_t depth;
+	uint32_t depth;
 };
 
 struct DrawCommandBuffer {

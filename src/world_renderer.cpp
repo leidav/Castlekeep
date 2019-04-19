@@ -20,7 +20,8 @@ int WorldRenderer::startUp()
 }
 
 void WorldRenderer::renderTile(render::DrawCommandBuffer &draw_commands,
-                               MapCoord pos, const graphics::Rect &rect)
+                               MapCoord pos, int layer,
+                               const graphics::Rect &rect)
 {
 	int offset_x = World::k_tile_width / 2;
 	int offset_y = World::k_tile_height / 2;
@@ -34,6 +35,9 @@ void WorldRenderer::renderTile(render::DrawCommandBuffer &draw_commands,
 	    (rect.height - World::k_tile_height) - offset_y;
 	draw_commands.commands[draw_commands.length].width = rect.width;
 	draw_commands.commands[draw_commands.length].height = rect.height;
+	draw_commands.commands[draw_commands.length].depth =
+	    pos.y * m_world->m_terrain_size * 32 + layer + pos.x;
+	fprintf(stderr, "%d\n", draw_commands.commands[draw_commands.length].depth);
 	draw_commands.length++;
 }
 
@@ -78,14 +82,16 @@ int WorldRenderer::renderWorld()
 		for (int x = 0; x < terrain_size; x++) {
 			MapCoord pos{static_cast<int16_t>(x), static_cast<int16_t>(y)};
 			size_t index = m_world->terrainIndex(pos);
-			uint16_t tile =
-			    m_world->m_terrain_macro_parts[index] +
-			    terrain_tileset->objects[m_world->m_terrain_macros[index] + 140]
-			        .start_index;
-			renderTile(draw_commands, pos, terrain_atlas->rects[tile]);
 			if (m_world->m_buildings[index] >= 0) {
-				tile = m_world->m_building_tiles[index];
-				renderTile(draw_commands2, pos, castle_atlas->rects[tile]);
+				uint16_t tile = m_world->m_building_tiles[index];
+				renderTile(draw_commands2, pos, 1, castle_atlas->rects[tile]);
+			} else {
+				uint16_t tile =
+				    m_world->m_terrain_macro_parts[index] +
+				    terrain_tileset
+				        ->objects[m_world->m_terrain_macros[index] + 140]
+				        .start_index;
+				renderTile(draw_commands, pos, 0, terrain_atlas->rects[tile]);
 			}
 		}
 	}

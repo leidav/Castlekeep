@@ -13,8 +13,6 @@ target_sources(${PROJECT_NAME} PRIVATE
 			   "${CMAKE_CURRENT_SOURCE_DIR}/assets.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/renderer.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/renderer.cpp"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/sdl_renderer.h"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/sdl_renderer.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/gl_renderer.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/gl_renderer.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/platform/platform.h"
