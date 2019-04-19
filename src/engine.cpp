@@ -4,7 +4,6 @@
 #include "loaders/data_loader.h"
 #include "platform/sdl_platform.h"
 #include "renderer/gl_renderer.h"
-#include "renderer/sdl_renderer.h"
 #include "utils/memory/allocator.h"
 
 #include <unistd.h>

@@ -1,6 +1,5 @@
 #include "sdl_platform.h"
 #include "memory/allocator.h"
-#include "renderer/sdl_renderer.h"
 
 #include <SDL2/SDL_render.h>
 
