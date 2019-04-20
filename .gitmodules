@@ -1,0 +1,3 @@
+[submodule "tools/sh2ck"]
+	path = tools/sh2ck
+	url = https://github.com/leidav/stronghold-to-castlekeep
