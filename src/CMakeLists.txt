@@ -3,6 +3,8 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_sources(${PROJECT_NAME} PRIVATE
 	           "${CMAKE_CURRENT_SOURCE_DIR}/engine.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game.h"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/system.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/world.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/world_renderer.cpp"

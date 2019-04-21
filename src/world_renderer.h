@@ -9,17 +9,29 @@
 
 namespace castlekeep
 {
-namespace core
+namespace game
 {
+class Camera
+{
+public:
+	Camera() : x(0), y(0) {}
+
+private:
+	MapCoord startCoord();
+	MapCoord endCoord();
+	int x;
+	int y;
+};
+
 using namespace memory::literals;
-class WorldRenderer : public EngineSystem<WorldRenderer>
+class WorldRenderer : public core::EngineSystem<WorldRenderer>
 {
 public:
 	constexpr static size_t k_minimal_arena_size = 10_mib;
 	WorldRenderer(const memory::Arena &arena, World *world);
 	~WorldRenderer();
 	int startUp();
-	int renderWorld();
+	int renderWorld(const Camera &camera);
 
 private:
 	int renderTerrain();
@@ -28,6 +40,6 @@ private:
 	memory::LinearAllocator m_allocator;
 	World *m_world;
 };
-}  // namespace core
+}  // namespace game
 }  // namespace castlekeep
 #endif

@@ -7,7 +7,7 @@
 
 namespace castlekeep
 {
-namespace core
+namespace game
 {
 template <typename Function>
 void setBlock(MapCoord pos, int block_size, Function f)
@@ -115,7 +115,7 @@ void World::generateTerrain()
 	graphics::TilesetHandle tileset_handle =
 	    m_tilesets[mapAssetToIndex(TilesetID::tile_castle)];
 	graphics::Tileset* tileset =
-	    g_engine->graphicsManager()->tileset(tileset_handle);
+	    core::Engine::g_engine->graphicsManager()->tileset(tileset_handle);
 	uint16_t tile_start = tileset->objects[31].start_index;
 	uint16_t size = 11;
 	MapCoord pos{50, 100};
@@ -142,13 +142,14 @@ int World::loadAssets()
 			return -1;
 		}
 
-		render::TextureHandle texture = g_engine->renderer()->createTexture(
-		    width, height, render::PixelFormat::argb8888, image_buffer);
+		render::TextureHandle texture =
+		    core::Engine::g_engine->renderer()->createTexture(
+		        width, height, render::PixelFormat::argb8888, image_buffer);
 		if (texture == render::k_texture_invalid) {
 			return -1;
 		}
 		graphics::TilesetHandle tileset =
-		    g_engine->graphicsManager()->loadTileset(
+		    core::Engine::g_engine->graphicsManager()->loadTileset(
 		        assets::tile_assets[i].data, texture);
 		if (tileset == graphics::k_tileset_invalid) {
 			return -1;
@@ -179,5 +180,5 @@ int World::loadAssets()
 	*/
 	return 0;
 }
-}  // namespace core
+}  // namespace game
 }  // namespace castlekeep

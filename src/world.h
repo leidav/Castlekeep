@@ -9,7 +9,7 @@
 
 namespace castlekeep
 {
-namespace core
+namespace game
 {
 class Engine;
 
@@ -40,12 +40,6 @@ struct TerrainMacroCell {
 struct MapCoord {
 	int16_t x;
 	int16_t y;
-};
-
-struct Camera {
-	Camera() : x(0), y(0) {}
-	int x;
-	int y;
 };
 
 constexpr MapCoord north(MapCoord pos)
@@ -150,8 +144,7 @@ private:
 	container::Array<graphics::AnimationHandle,
 	                 Allocator<graphics::AnimationHandle>>
 	    m_animations;
-	Camera m_camera;
 };
-}  // namespace core
+}  // namespace game
 }  // namespace castlekeep
 #endif

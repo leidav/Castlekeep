@@ -138,7 +138,7 @@ int GLRenderSystem::startUp()
 	                      reinterpret_cast<void *>(0));
 	glEnableVertexAttribArray(0);
 	/*glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, GL_FALSE, 4 * 2 + 4,
-	                      reinterpret_cast<void *>(2 * 2));
+						  reinterpret_cast<void *>(2 * 2));
 						  */
 	glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, GL_FALSE, 4 * 2 + 4,
 	                      reinterpret_cast<void *>(2 * 2));

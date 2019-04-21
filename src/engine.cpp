@@ -13,6 +13,9 @@ namespace castlekeep
 namespace core
 {
 using namespace memory::literals;
+
+Engine* Engine::g_engine = nullptr;
+
 Engine::Engine(size_t mem_size)
     : m_memory(mem_size),
       m_global_allocator(m_memory.memory()),
@@ -20,8 +23,7 @@ Engine::Engine(size_t mem_size)
       m_platform(nullptr, m_systems_allocator),
       m_renderer(nullptr, m_systems_allocator),
       m_graphics_manager(nullptr, m_systems_allocator),
-      m_world(nullptr, m_systems_allocator),
-      m_world_renderer(nullptr, m_systems_allocator)
+      m_game(nullptr, m_systems_allocator)
 {
 }
 
@@ -57,16 +59,10 @@ int Engine::startUp()
 	        assets::k_num_generic_image_assets);
 
 	m_graphics_manager->startUp();
-	m_world = memory::createUniquePtrObject<World>(
+	m_game = memory::createUniquePtrObject<game::Game>(
 	    m_systems_allocator,
-	    memory::Arena(m_global_allocator, World::k_minimal_arena_size), 400);
-	m_world_renderer = memory::createUniquePtrObject<WorldRenderer>(
-	    m_systems_allocator,
-	    memory::Arena(m_global_allocator, WorldRenderer::minimalArenaSize()),
-	    m_world.get());
-
-	m_world->loadAssets();
-	m_world->generateTerrain();
+	    memory::Arena(m_global_allocator, game::Game::k_minimal_arena_size));
+	m_game->startUp();
 
 	return 0;
 }
@@ -74,8 +70,10 @@ int Engine::startUp()
 int Engine::loop()
 {
 	while (m_platform->processEvents()) {
+		m_game->input();
+		m_game->update();
 		m_renderer->startFrame();
-		m_world_renderer->renderWorld();
+		m_game->render();
 		m_renderer->endFrame();
 	}
 	return 0;

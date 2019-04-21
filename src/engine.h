@@ -4,22 +4,20 @@
 #include "memory/allocator.h"
 #include "memory/linear_allocator.h"
 
+#include "game.h"
 #include "graphics_manager.h"
 #include "loaders/image_loader.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
-#include "world.h"
-#include "world_renderer.h"
 
 namespace castlekeep
 {
 namespace core
 {
-inline Engine *g_engine;
-
 class Engine
 {
 public:
+	static Engine *g_engine;
 	static std::unique_ptr<Engine> create(size_t memory_size)
 	{
 		if (instanciated == true) {
@@ -52,11 +50,11 @@ private:
 	    m_renderer;
 	memory::UniquePtr<graphics::GraphicsManager, memory::LinearAllocator>
 	    m_graphics_manager;
-	memory::UniquePtr<World, memory::LinearAllocator> m_world;
-	memory::UniquePtr<WorldRenderer, memory::LinearAllocator> m_world_renderer;
+	memory::UniquePtr<game::Game, memory::LinearAllocator> m_game;
 
 	static inline bool instanciated = false;
 };
+
 }  // namespace core
 }  // namespace castlekeep
 #endif

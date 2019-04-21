@@ -4,7 +4,7 @@
 
 namespace castlekeep
 {
-namespace core
+namespace game
 {
 using namespace assets;
 WorldRenderer::WorldRenderer(const memory::Arena &arena, World *world)
@@ -37,11 +37,10 @@ void WorldRenderer::renderTile(render::DrawCommandBuffer &draw_commands,
 	draw_commands.commands[draw_commands.length].height = rect.height;
 	draw_commands.commands[draw_commands.length].depth =
 	    pos.y * m_world->m_terrain_size * 32 + layer + pos.x;
-	fprintf(stderr, "%d\n", draw_commands.commands[draw_commands.length].depth);
 	draw_commands.length++;
 }
 
-int WorldRenderer::renderWorld()
+int WorldRenderer::renderWorld(const Camera &camera)
 {
 	auto marker = m_allocator.markGuarded();
 	int terrain_size = m_world->m_terrain_size;
@@ -54,10 +53,12 @@ int WorldRenderer::renderWorld()
 	    m_world->m_tilesets[mapAssetToIndex(TilesetID::tile_land_macros)];
 
 	graphics::Tileset *terrain_tileset =
-	    g_engine->graphicsManager()->tileset(terrain_tileset_handle);
+	    core::Engine::g_engine->graphicsManager()->tileset(
+	        terrain_tileset_handle);
 
 	graphics::TextureAtlas *terrain_atlas =
-	    g_engine->graphicsManager()->atlas(terrain_tileset->atlas);
+	    core::Engine::g_engine->graphicsManager()->atlas(
+	        terrain_tileset->atlas);
 
 	draw_commands.length = 0;
 	draw_commands.texture_id = terrain_atlas->texture;
@@ -65,10 +66,11 @@ int WorldRenderer::renderWorld()
 	graphics::TilesetHandle castle_tileset_handle =
 	    m_world->m_tilesets[mapAssetToIndex(TilesetID::tile_castle)];
 	graphics::Tileset *castle_tileset =
-	    g_engine->graphicsManager()->tileset(castle_tileset_handle);
+	    core::Engine::g_engine->graphicsManager()->tileset(
+	        castle_tileset_handle);
 
 	graphics::TextureAtlas *castle_atlas =
-	    g_engine->graphicsManager()->atlas(castle_tileset->atlas);
+	    core::Engine::g_engine->graphicsManager()->atlas(castle_tileset->atlas);
 
 	render::DrawCommandBuffer draw_commands2;
 	draw_commands2.commands =
@@ -95,11 +97,11 @@ int WorldRenderer::renderWorld()
 			}
 		}
 	}
-	g_engine->renderer()->draw(draw_commands);
-	g_engine->renderer()->draw(draw_commands2);
+	core::Engine::g_engine->renderer()->draw(draw_commands);
+	core::Engine::g_engine->renderer()->draw(draw_commands2);
 	return 0;
 }
 
 int WorldRenderer::renderTerrain() {}
-}  // namespace core
+}  // namespace game
 }  // namespace castlekeep
