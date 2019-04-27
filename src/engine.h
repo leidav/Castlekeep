@@ -4,8 +4,9 @@
 #include "memory/allocator.h"
 #include "memory/linear_allocator.h"
 
-#include "game.h"
+#include "game/game.h"
 #include "graphics_manager.h"
+#include "input_manager.h"
 #include "loaders/image_loader.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
@@ -37,6 +38,7 @@ public:
 	{
 		return m_graphics_manager.get();
 	}
+	input::InputManager *inputManager() { return m_input_manager.get(); }
 
 private:
 	Engine(size_t memory_size);
@@ -50,6 +52,8 @@ private:
 	    m_renderer;
 	memory::UniquePtr<graphics::GraphicsManager, memory::LinearAllocator>
 	    m_graphics_manager;
+	memory::UniquePtr<input::InputManager, memory::LinearAllocator>
+	    m_input_manager;
 	memory::UniquePtr<game::Game, memory::LinearAllocator> m_game;
 
 	static inline bool instanciated = false;

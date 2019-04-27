@@ -22,7 +22,7 @@ public:
 	~SDLPlatform() final;
 	int startUp();
 	int createWindow(int width, int height, const char *name) final;
-	bool processEvents() final;
+	bool processEvents(input::InputState &state) final;
 	WindowHandle window() final;
 
 private:

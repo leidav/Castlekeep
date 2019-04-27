@@ -108,14 +108,14 @@ class World
 	    memory::ContainerAllocatorAdapter<T, memory::LinearAllocator>;
 
 public:
-	constexpr static int k_tile_width = 32;
-	constexpr static int k_tile_height = 16;
-
 	constexpr static size_t k_minimal_arena_size = 100_mib;
 	World(const memory::Arena& arena, int terrain_size);
 	~World();
 	int loadAssets();
 	void generateTerrain();
+	int terrainSize() const;
+	int numHorizontalTiles() const;
+	int numVerticalTiles() const;
 
 private:
 	size_t terrainIndex(MapCoord coord) const

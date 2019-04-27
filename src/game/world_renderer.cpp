@@ -20,19 +20,18 @@ int WorldRenderer::startUp()
 }
 
 void WorldRenderer::renderTile(render::DrawCommandBuffer &draw_commands,
-                               MapCoord pos, int layer,
+                               MapCoord pos, const Camera &c, int layer,
                                const graphics::Rect &rect)
 {
-	int offset_x = World::k_tile_width / 2;
-	int offset_y = World::k_tile_height / 2;
-	int shift = (pos.y & 0x1) * World::k_tile_width / 2;
+	int offset_x = k_tile_width / 2 + c.x();
+	int offset_y = k_tile_height / 2 + c.y();
+	int shift = (pos.y & 0x1) * k_tile_width / 2;
 	draw_commands.commands[draw_commands.length].src_x = rect.x;
 	draw_commands.commands[draw_commands.length].src_y = rect.y;
 	draw_commands.commands[draw_commands.length].dst_x =
-	    pos.x * World::k_tile_width + shift - offset_x;
+	    pos.x * k_tile_width + shift - offset_x;
 	draw_commands.commands[draw_commands.length].dst_y =
-	    pos.y * World::k_tile_height / 2 -
-	    (rect.height - World::k_tile_height) - offset_y;
+	    pos.y * k_tile_height / 2 - (rect.height - k_tile_height) - offset_y;
 	draw_commands.commands[draw_commands.length].width = rect.width;
 	draw_commands.commands[draw_commands.length].height = rect.height;
 	draw_commands.commands[draw_commands.length].depth =
@@ -80,26 +79,46 @@ int WorldRenderer::renderWorld(const Camera &camera)
 	draw_commands2.length = 0;
 	draw_commands2.texture_id = castle_atlas->texture;
 
-	for (int y = 0; y < terrain_size; y++) {
-		for (int x = 0; x < terrain_size; x++) {
+	int startx = camera.x() / k_tile_width;
+	int starty = (camera.y() / k_tile_height) * 2;
+	int endx =
+	    startx + core::Engine::g_engine->renderer()->width() / k_tile_width + 2;
+	int endy =
+	    starty +
+	    (core::Engine::g_engine->renderer()->height() / k_tile_height) * 2 + 4;
+
+	for (int y = starty; y < endy; y++) {
+		for (int x = startx; x < endx; x++) {
 			MapCoord pos{static_cast<int16_t>(x), static_cast<int16_t>(y)};
 			size_t index = m_world->terrainIndex(pos);
 			if (m_world->m_buildings[index] >= 0) {
 				uint16_t tile = m_world->m_building_tiles[index];
-				renderTile(draw_commands2, pos, 1, castle_atlas->rects[tile]);
+				renderTile(draw_commands2, pos, camera, 1,
+				           castle_atlas->rects[tile]);
 			} else {
 				uint16_t tile =
 				    m_world->m_terrain_macro_parts[index] +
 				    terrain_tileset
 				        ->objects[m_world->m_terrain_macros[index] + 140]
 				        .start_index;
-				renderTile(draw_commands, pos, 0, terrain_atlas->rects[tile]);
+				renderTile(draw_commands, pos, camera, 0,
+				           terrain_atlas->rects[tile]);
 			}
 		}
 	}
 	core::Engine::g_engine->renderer()->draw(draw_commands);
 	core::Engine::g_engine->renderer()->draw(draw_commands2);
 	return 0;
+}
+
+int WorldRenderer::worldWidth() const
+{
+	return m_world->numHorizontalTiles() * k_tile_width;
+}
+
+int WorldRenderer::worldHeight() const
+{
+	return m_world->numVerticalTiles() * k_tile_height / 2;
 }
 
 int WorldRenderer::renderTerrain() {}

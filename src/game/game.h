@@ -1,7 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "memory/linear_allocator.h"
+#include <memory/linear_allocator.h>
+#include "input_manager.h"
 #include "world.h"
 #include "world_renderer.h"
 
@@ -15,10 +16,9 @@ public:
 	constexpr static size_t k_minimal_arena_size =
 	    10_mib + game::World::k_minimal_arena_size +
 	    game::WorldRenderer::k_minimal_arena_size;
-	Game(const memory::Arena &arena);
+	Game(const memory::Arena& arena);
 	~Game();
 	void startUp();
-	void input();
 	void update();
 	void render();
 	void shutDown();
@@ -27,6 +27,7 @@ private:
 	memory::LinearAllocator m_allocator;
 	memory::UniquePtr<World, memory::LinearAllocator> m_world;
 	memory::UniquePtr<WorldRenderer, memory::LinearAllocator> m_world_renderer;
+	input::InputManager* m_input_manager;
 	Camera m_camera;
 };
 }  // namespace game

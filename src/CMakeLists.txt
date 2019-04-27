@@ -3,16 +3,18 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_sources(${PROJECT_NAME} PRIVATE
 	           "${CMAKE_CURRENT_SOURCE_DIR}/engine.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/engine.cpp"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/game.h"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/game.cpp"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/game.h"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/game.cpp"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/world.h"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/world.cpp"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/world_renderer.cpp"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/game/world_renderer.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/system.h"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/world.h"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/world_renderer.cpp"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/world_renderer.h"
-			   "${CMAKE_CURRENT_SOURCE_DIR}/world.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/graphics_manager.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/graphics_manager.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/assets.h"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/input_manager.h"
+			   "${CMAKE_CURRENT_SOURCE_DIR}/input_manager.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/renderer.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/renderer.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/renderer/gl_renderer.h"
@@ -27,7 +29,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 			   "${CMAKE_CURRENT_SOURCE_DIR}/loaders/image_loader.cpp"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/loaders/data_loader.h"
 			   "${CMAKE_CURRENT_SOURCE_DIR}/loaders/data_loader.cpp")
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBEPOXY_INCLUDE_DIRS})

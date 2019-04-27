@@ -42,6 +42,9 @@ public:
 	virtual void startFrame() = 0;
 	virtual void draw(const DrawCommandBuffer &buffer) = 0;
 	virtual void endFrame() = 0;
+
+	virtual int width() = 0;
+	virtual int height() = 0;
 };
 
 }  // namespace render

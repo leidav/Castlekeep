@@ -8,6 +8,14 @@ namespace castlekeep
 {
 namespace render
 {
+struct Vertex {
+	int16_t x;
+	int16_t y;
+	uint32_t z;
+	uint16_t u;
+	uint16_t v;
+};
+
 static const char *vertex_shader_source =
     R"(
     #version 330 core
@@ -80,7 +88,7 @@ int GLRenderSystem::startUp()
 
 	m_gl_context = SDL_GL_CreateContext(m_window);
 	if (!m_gl_context) {
-		DEBUG_ERROR("context");
+		DEBUG_ERROR("could not create opengl context");
 		return -1;
 	}
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -134,20 +142,17 @@ int GLRenderSystem::startUp()
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, k_vbo_size, nullptr, GL_STREAM_DRAW);
-	glVertexAttribPointer(0, 3, GL_SHORT, GL_FALSE, 4 * 2 + 4,
+	glVertexAttribPointer(0, 3, GL_SHORT, GL_FALSE, sizeof(Vertex),
 	                      reinterpret_cast<void *>(0));
 	glEnableVertexAttribArray(0);
-	/*glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, GL_FALSE, 4 * 2 + 4,
-						  reinterpret_cast<void *>(2 * 2));
-						  */
-	glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, GL_FALSE, 4 * 2 + 4,
-	                      reinterpret_cast<void *>(2 * 2));
+	glVertexAttribPointer(1, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
+	                      reinterpret_cast<void *>(4));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_UNSIGNED_SHORT, GL_FALSE, 4 * 2 + 4,
-	                      reinterpret_cast<void *>(2 * 2 + 4));
+	glVertexAttribPointer(2, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(Vertex),
+	                      reinterpret_cast<void *>(8));
 	glEnableVertexAttribArray(2);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	// glDepthFunc(GL_GREATER);
+
 	glDepthFunc(GL_GEQUAL);
 	glEnable(GL_DEPTH_TEST);
 	glClearDepthf(0.0);
@@ -155,17 +160,50 @@ int GLRenderSystem::startUp()
 	return 0;
 }
 
-struct Vertex {
-	int16_t x;
-	int16_t y;
-	uint32_t z;
-	uint16_t u;
-	uint16_t v;
-};
-
 void GLRenderSystem::startFrame()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+static void drawCommand(Vertex *buf, int i, const DrawCommand &cmd)
+{
+	// first triangle
+	buf[i * 6 + 0].x = cmd.dst_x;
+	buf[i * 6 + 0].y = cmd.dst_y;
+	buf[i * 6 + 0].z = cmd.depth;
+	buf[i * 6 + 0].u = cmd.src_x;
+	buf[i * 6 + 0].v = cmd.src_y;
+
+	buf[i * 6 + 1].x = cmd.dst_x + cmd.width;
+	buf[i * 6 + 1].y = cmd.dst_y;
+	buf[i * 6 + 1].z = cmd.depth;
+	buf[i * 6 + 1].u = cmd.src_x + cmd.width;
+	buf[i * 6 + 1].v = cmd.src_y;
+
+	buf[i * 6 + 2].x = cmd.dst_x;
+	buf[i * 6 + 2].y = cmd.dst_y + cmd.height;
+	buf[i * 6 + 2].z = cmd.depth;
+	buf[i * 6 + 2].u = cmd.src_x;
+	buf[i * 6 + 2].v = cmd.src_y + cmd.height;
+
+	// second triangle
+	buf[i * 6 + 3].x = cmd.dst_x;
+	buf[i * 6 + 3].y = cmd.dst_y + cmd.height;
+	buf[i * 6 + 3].z = cmd.depth;
+	buf[i * 6 + 3].u = cmd.src_x;
+	buf[i * 6 + 3].v = cmd.src_y + cmd.height;
+
+	buf[i * 6 + 4].x = cmd.dst_x + cmd.width;
+	buf[i * 6 + 4].y = cmd.dst_y;
+	buf[i * 6 + 4].z = cmd.depth;
+	buf[i * 6 + 4].u = cmd.src_x + cmd.width;
+	buf[i * 6 + 4].v = cmd.src_y;
+
+	buf[i * 6 + 5].x = cmd.dst_x + cmd.width;
+	buf[i * 6 + 5].y = cmd.dst_y + cmd.height;
+	buf[i * 6 + 5].z = cmd.depth;
+	buf[i * 6 + 5].u = cmd.src_x + cmd.width;
+	buf[i * 6 + 5].v = cmd.src_y + cmd.height;
 }
 
 void GLRenderSystem::draw(const DrawCommandBuffer &buffer)
@@ -176,45 +214,8 @@ void GLRenderSystem::draw(const DrawCommandBuffer &buffer)
 	DEBUG_ASSERT(buffer.length * 6 * sizeof(Vertex) <= k_vbo_size,
 	             "vbo buffer to small");
 	for (int i = 0; i < buffer.length; i++) {
-		// first triangle
 		auto &cmd = buffer.commands[i];
-
-		buf[i * 6 + 0].x = cmd.dst_x;
-		buf[i * 6 + 0].y = cmd.dst_y;
-		buf[i * 6 + 0].z = cmd.depth;
-		buf[i * 6 + 0].u = cmd.src_x;
-		buf[i * 6 + 0].v = cmd.src_y;
-
-		buf[i * 6 + 1].x = cmd.dst_x + cmd.width;
-		buf[i * 6 + 1].y = cmd.dst_y;
-		buf[i * 6 + 1].z = cmd.depth;
-		buf[i * 6 + 1].u = cmd.src_x + cmd.width;
-		buf[i * 6 + 1].v = cmd.src_y;
-
-		buf[i * 6 + 2].x = cmd.dst_x;
-		buf[i * 6 + 2].y = cmd.dst_y + cmd.height;
-		buf[i * 6 + 2].z = cmd.depth;
-		buf[i * 6 + 2].u = cmd.src_x;
-		buf[i * 6 + 2].v = cmd.src_y + cmd.height;
-
-		// second triangle
-		buf[i * 6 + 3].x = cmd.dst_x;
-		buf[i * 6 + 3].y = cmd.dst_y + cmd.height;
-		buf[i * 6 + 3].z = cmd.depth;
-		buf[i * 6 + 3].u = cmd.src_x;
-		buf[i * 6 + 3].v = cmd.src_y + cmd.height;
-
-		buf[i * 6 + 4].x = cmd.dst_x + cmd.width;
-		buf[i * 6 + 4].y = cmd.dst_y;
-		buf[i * 6 + 4].z = cmd.depth;
-		buf[i * 6 + 4].u = cmd.src_x + cmd.width;
-		buf[i * 6 + 4].v = cmd.src_y;
-
-		buf[i * 6 + 5].x = cmd.dst_x + cmd.width;
-		buf[i * 6 + 5].y = cmd.dst_y + cmd.height;
-		buf[i * 6 + 5].z = cmd.depth;
-		buf[i * 6 + 5].u = cmd.src_x + cmd.width;
-		buf[i * 6 + 5].v = cmd.src_y + cmd.height;
+		drawCommand(buf, i, cmd);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 	glBindTexture(GL_TEXTURE_RECTANGLE, texture(buffer.texture_id));
@@ -224,6 +225,16 @@ void GLRenderSystem::draw(const DrawCommandBuffer &buffer)
 void GLRenderSystem::endFrame()
 {
 	SDL_GL_SwapWindow(m_window);
+}
+
+int GLRenderSystem::width()
+{
+	return m_width;
+}
+
+int GLRenderSystem::height()
+{
+	return m_height;
 }
 
 GLuint GLRenderSystem::texture(TextureHandle id)

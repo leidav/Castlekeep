@@ -23,6 +23,7 @@ Engine::Engine(size_t mem_size)
       m_platform(nullptr, m_systems_allocator),
       m_renderer(nullptr, m_systems_allocator),
       m_graphics_manager(nullptr, m_systems_allocator),
+      m_input_manager(nullptr, m_systems_allocator),
       m_game(nullptr, m_systems_allocator)
 {
 }
@@ -59,6 +60,10 @@ int Engine::startUp()
 	        assets::k_num_generic_image_assets);
 
 	m_graphics_manager->startUp();
+
+	m_input_manager =
+	    memory::createUniquePtrObject<input::InputManager>(m_systems_allocator);
+
 	m_game = memory::createUniquePtrObject<game::Game>(
 	    m_systems_allocator,
 	    memory::Arena(m_global_allocator, game::Game::k_minimal_arena_size));
@@ -69,8 +74,9 @@ int Engine::startUp()
 
 int Engine::loop()
 {
-	while (m_platform->processEvents()) {
-		m_game->input();
+	bool is_running = true;
+	while (is_running) {
+		is_running = m_input_manager->readInput();
 		m_game->update();
 		m_renderer->startFrame();
 		m_game->render();
@@ -83,6 +89,6 @@ int Engine::shutDown()
 {
 	return 0;
 }
-}  // namespace core
 
+}  // namespace core
 }  // namespace castlekeep

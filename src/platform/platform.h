@@ -1,6 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "input_manager.h"
 #include "memory/allocator.h"
 #include "memory/polymorphic_allocator_wrappers.h"
 #include "renderer/renderer.h"
@@ -20,7 +21,7 @@ class PlatformInterface
 public:
 	virtual ~PlatformInterface() = 0;
 	virtual int createWindow(int width, int height, const char *name) = 0;
-	virtual bool processEvents() = 0;
+	virtual bool processEvents(input::InputState &state) = 0;
 	virtual WindowHandle window() = 0;
 };
 

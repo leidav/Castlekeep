@@ -100,7 +100,7 @@ void World::generateTerrain()
 		}
 	}
 	int block_size = 4;
-	int blocks = m_terrain_size / (block_size * 2) - 1;
+	int blocks = (m_terrain_size / block_size) + 1;
 
 	for (int block_y = 0; block_y < blocks; block_y++) {
 		for (int block_x = 0; block_x < blocks; block_x++) {
@@ -120,6 +120,21 @@ void World::generateTerrain()
 	uint16_t size = 11;
 	MapCoord pos{50, 100};
 	placeBuilding(pos, size, tile_start, tileset_handle);
+}
+
+int World::terrainSize() const
+{
+	return m_terrain_size;
+}
+
+int World::numHorizontalTiles() const
+{
+	return m_terrain_size;
+}
+
+int World::numVerticalTiles() const
+{
+	return m_terrain_size;
 }
 
 int World::loadAssets()
